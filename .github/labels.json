@@ -1,0 +1,37 @@
+[
+  {
+    "name": "check-in",
+    "color": "0E8A16",
+    "description": "Weekly check-in attendance confirmation"
+  },
+  {
+    "name": "reminder",
+    "color": "FFA500",
+    "description": "Automated reminder issues"
+  },
+  {
+    "name": "blog-post",
+    "color": "1D76DB",
+    "description": "Weekly blog post tasks"
+  },
+  {
+    "name": "daily-task",
+    "color": "B60205",
+    "description": "Daily challenge tasks"
+  },
+  {
+    "name": "help wanted",
+    "color": "008672",
+    "description": "Extra attention is needed"
+  },
+  {
+    "name": "question",
+    "color": "D876E3",
+    "description": "Further information is requested"
+  },
+  {
+    "name": "documentation",
+    "color": "0075CA",
+    "description": "Improvements or additions to documentation"
+  }
+] 
