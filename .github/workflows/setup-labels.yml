@@ -1,0 +1,30 @@
+name: Setup Repository Labels
+
+on:
+  workflow_dispatch:  # Manual trigger
+  push:
+    paths:
+      - '.github/labels.json'
+    branches:
+      - main
+
+jobs:
+  setup-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+      
+      - name: Install GitHub Label Sync
+        run: npm install -g github-label-sync
+        
+      - name: Create Labels
+        uses: EndBug/label-sync@v2
+        with:
+          config-file: .github/labels.json
+          token: ${{ secrets.PAT_TOKEN }}
+          delete-other-labels: false 
