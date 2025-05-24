@@ -167,6 +167,8 @@ def get_next_checkin():
     return "All check-ins completed!"
 
 def get_perfect_attendance(df):
+    if df.empty:
+        return "No participants have perfect attendance yet."
     perfect = df[df['Check-ins'] == len(CHECKIN_DATES)]['Participant'].tolist()
     if perfect:
         return "Participants with perfect check-in attendance:\n" + "\n".join(f"- {p}" for p in perfect)
