@@ -9,6 +9,8 @@ on:
 jobs:
   terraform-validation:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -20,53 +22,129 @@ jobs:
         with:
           terraform_version: "1.5.0"
 
+      - name: Initialize validation results
+        run: |
+          echo "VALIDATION_ERRORS=" >> $GITHUB_ENV
+          echo "VALIDATION_WARNINGS=" >> $GITHUB_ENV
+          echo "HAS_ERRORS=false" >> $GITHUB_ENV
+
       - name: Check file structure
+        id: file_structure
+        continue-on-error: true
         run: |
           for tf_file in $(find . -name "*.tf" -type f); do
             if [[ ! $tf_file =~ /Day[0-9]+/Submissions/[^/]+/.*\.tf$ ]]; then
-              echo "Error: Invalid file structure for $tf_file"
-              echo "Files must be in format: Day<number>/Submissions/<username>/*.tf"
+              echo "HAS_ERRORS=true" >> $GITHUB_ENV
+              echo "VALIDATION_ERRORS<<EOF" >> $GITHUB_ENV
+              echo "❌ **File Structure Error**" >> $GITHUB_ENV
+              echo "File: \`$tf_file\`" >> $GITHUB_ENV
+              echo "Files must be in format: \`Day<number>/Submissions/<username>/*.tf\`" >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
               exit 1
             fi
           done
 
       - name: Terraform Format Check
+        id: fmt
+        continue-on-error: true
         run: |
           for dir in $(find . -name "*.tf" -type f -exec dirname {} \; | sort -u); do
-            echo "Checking format in $dir"
-            cd $dir
-            terraform fmt -check -recursive
-            cd -
+            if ! (cd $dir && terraform fmt -check -recursive); then
+              echo "HAS_ERRORS=true" >> $GITHUB_ENV
+              echo "VALIDATION_ERRORS<<EOF" >> $GITHUB_ENV
+              echo "❌ **Terraform Format Error**" >> $GITHUB_ENV
+              echo "Directory: \`$dir\`" >> $GITHUB_ENV
+              echo "Run \`terraform fmt\` to fix formatting issues." >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
+            fi
           done
 
       - name: Security Check
+        id: security
+        continue-on-error: true
         run: |
           for tf_file in $(find . -name "*.tf" -type f); do
-            echo "Checking $tf_file for security issues"
             # Check for hardcoded credentials
-            if grep -i "access_key\|secret_key\|password\|token" "$tf_file"; then
-              echo "Error: Potential hardcoded credentials found in $tf_file"
-              exit 1
+            if grep -i "access_key\|secret_key\|password\|token" "$tf_file" > /dev/null; then
+              echo "HAS_ERRORS=true" >> $GITHUB_ENV
+              echo "VALIDATION_ERRORS<<EOF" >> $GITHUB_ENV
+              echo "❌ **Security Error: Hardcoded Credentials**" >> $GITHUB_ENV
+              echo "File: \`$tf_file\`" >> $GITHUB_ENV
+              echo "⚠️ Never commit credentials or secrets in Terraform files!" >> $GITHUB_ENV
+              echo "Use variables or environment variables instead." >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
             fi
             
             # Check for public access
-            if grep -i "acl.*=.*public" "$tf_file"; then
-              echo "Error: Public access detected in $tf_file"
-              exit 1
+            if grep -i "acl.*=.*public" "$tf_file" > /dev/null; then
+              echo "HAS_ERRORS=true" >> $GITHUB_ENV
+              echo "VALIDATION_ERRORS<<EOF" >> $GITHUB_ENV
+              echo "❌ **Security Error: Public Access**" >> $GITHUB_ENV
+              echo "File: \`$tf_file\`" >> $GITHUB_ENV
+              echo "⚠️ Public access detected. Ensure this is intentional and documented." >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
             fi
             
             # Check for required tags
             if ! grep -i "tags.*=.*{" "$tf_file" > /dev/null; then
-              echo "Warning: Missing resource tags in $tf_file"
+              echo "VALIDATION_WARNINGS<<EOF" >> $GITHUB_ENV
+              echo "⚠️ **Best Practice Warning**" >> $GITHUB_ENV
+              echo "File: \`$tf_file\`" >> $GITHUB_ENV
+              echo "Resource tags are missing. Consider adding tags for better resource management." >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
             fi
           done
 
       - name: Terraform Init and Validate
+        id: validate
+        continue-on-error: true
         run: |
           for dir in $(find . -name "*.tf" -type f -exec dirname {} \; | sort -u); do
-            echo "Validating in $dir"
-            cd $dir
-            terraform init -backend=false
-            terraform validate
-            cd -
-          done 
+            if ! (cd $dir && terraform init -backend=false && terraform validate); then
+              echo "HAS_ERRORS=true" >> $GITHUB_ENV
+              echo "VALIDATION_ERRORS<<EOF" >> $GITHUB_ENV
+              echo "❌ **Terraform Validation Error**" >> $GITHUB_ENV
+              echo "Directory: \`$dir\`" >> $GITHUB_ENV
+              echo "Please fix the validation errors shown in the workflow logs." >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
+            fi
+          done
+
+      - name: Post Validation Results
+        uses: actions/github-script@v6
+        if: always()
+        with:
+          script: |
+            const errors = process.env.VALIDATION_ERRORS;
+            const warnings = process.env.VALIDATION_WARNINGS;
+            
+            let comment = '## Terraform Validation Results\n\n';
+            
+            if (errors) {
+              comment += '### 🚫 Validation Errors\n\n' + errors + '\n\n';
+            }
+            
+            if (warnings) {
+              comment += '### ⚠️ Warnings\n\n' + warnings + '\n\n';
+            }
+            
+            if (!errors && !warnings) {
+              comment += '✅ All validation checks passed successfully!\n\n';
+            }
+            
+            comment += '\nFor detailed information, check the [workflow logs](' + context.payload.repository.html_url + '/actions/runs/' + context.runId + ').';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Check Final Status
+        if: always()
+        run: |
+          if [[ "${{ env.HAS_ERRORS }}" == "true" ]]; then
+            echo "❌ Validation failed with errors. Please check the validation results above."
+            exit 1
+          fi 
