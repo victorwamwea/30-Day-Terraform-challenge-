@@ -104,18 +104,30 @@ def generate_leaderboard():
                 pass
 
     # Convert to DataFrame
-    df = pd.DataFrame([
-        {
-            'Participant': author,
-            'Points': stats['points'],
-            'PRs Merged': stats['prs_merged'],
-            'Days Completed': len(stats['days_completed']),
-            'Check-ins': stats['checkins_attended'],
-            'Last Activity': stats['last_activity'].strftime('%Y-%m-%d'),
-            'Progress': f"{len(stats['days_completed'])/30*100:.1f}%"
-        }
-        for author, stats in participants.items()
-    ])
+    if not participants:
+        # Create empty DataFrame with correct columns
+        df = pd.DataFrame(columns=[
+            'Participant',
+            'Points',
+            'PRs Merged',
+            'Days Completed',
+            'Check-ins',
+            'Last Activity',
+            'Progress'
+        ])
+    else:
+        df = pd.DataFrame([
+            {
+                'Participant': author,
+                'Points': stats['points'],
+                'PRs Merged': stats['prs_merged'],
+                'Days Completed': len(stats['days_completed']),
+                'Check-ins': stats['checkins_attended'],
+                'Last Activity': stats['last_activity'].strftime('%Y-%m-%d'),
+                'Progress': f"{len(stats['days_completed'])/30*100:.1f}%"
+            }
+            for author, stats in participants.items()
+        ])
 
     # Sort by points and days completed (if DataFrame is not empty)
     if not df.empty:
