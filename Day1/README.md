@@ -1,69 +1,68 @@
-# Day 1: Introduction to Terraform and Infrastructure as Code (IaC)
+# Day 1 - S3 Bucket with Best Practices
 
 ## Overview
+This Terraform configuration creates an S3 bucket following AWS best practices and security guidelines.
 
-Welcome to Day 1 of the Terraform 30-Day Challenge! Today, we’ll be focusing on getting an introduction to Terraform and understanding the fundamental concepts of Infrastructure as Code (IaC). This day is all about laying the foundation for the rest of the challenge.
+## Features
+- Versioning enabled
+- Proper resource tagging
+- Input validation
+- No public access
+- Uses variables for configuration
 
-## Tasks for Today
+## Prerequisites
+- AWS CLI configured
+- Terraform >= 1.0.0
+- AWS credentials with appropriate permissions
 
-### 1. **Reading**
-   - **Book**: Chapter 1 of "Terraform: Up & Running" by Yevgeniy Brikman.
-   - **Goal**: Gain an understanding of what Terraform is and why it's used.
+## Usage
 
-### 2. **Videos**
-   - **Udemy**: Watch the following videos:
-     - "What is Infrastructure as Code?"
-     - "Benefits of Infrastructure as Code"
-   - **Goal**: Understand the concept of IaC and its benefits in modern DevOps practices.
+1. Initialize Terraform:
+```bash
+terraform init
+```
 
-### 3. **Activity**
-   - **Set Up a Personal Blog**: If you don’t already have a blog, set one up on your preferred platform (e.g., WordPress, Medium, GitHub Pages).
-   - **Goal**: Write a brief introduction about yourself, your background, and your goals for this 30-day challenge.
+2. Review the plan:
+```bash
+terraform plan -var="bucket_name=your-unique-bucket-name"
+```
 
-### 4. **Blog Post**
-   - **Title**: "What is Infrastructure as Code (IaC) and Why It's Transforming DevOps"
-   - **Goal**: Share your insights on IaC based on your reading and videos.
+3. Apply the configuration:
+```bash
+terraform apply -var="bucket_name=your-unique-bucket-name"
+```
 
-### 5. **Social Media Post**
-   - **Text**: "🚀 Just kicked off the 30-Day Terraform Challenge! Learning about Infrastructure as Code today. #30daytfchallenge #HUG #hashicorp #HUGYDE @chiche. #IaC"
-   - **Goal**: Engage with the community by sharing your progress on social media.
+## Variables
 
-## How to Submit Your Work
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| aws_region | AWS region to deploy resources | string | us-east-1 | no |
+| bucket_name | Name of the S3 bucket to create | string | n/a | yes |
+| environment | Environment name (dev, staging, prod) | string | dev | no |
 
-### 1. **create the `day1-yourname.md` File**
-   - Open the `Day1/day1-yourname.md` file.
-   - Add your name, the task you completed, and the date and time of completion.
-   
-### 2. **Commit Your Changes**
-   - Stage and commit your changes in the `daily-update.md` file with a message like:
-     ```bash
-     git add Day1/daily-update.md
-     git commit -m "Completed Day 1 task and updated daily-update.md"
-     ```
+## Outputs
 
-### 3. **Create a Pull Request**
-   - Push your changes to your GitHub repository:
-     ```bash
-     git push origin day1-intro-to-terraform
-     ```
-   - Create a pull request using the provided template and include links to your blog post and social media post.
+| Name | Description |
+|------|-------------|
+| bucket_name | Name of the created bucket |
+| bucket_arn | ARN of the created bucket |
+| bucket_region | Region where the bucket was created |
+| versioning_status | Versioning status of the bucket |
 
-## Checklist
+## Security Considerations
+- No public access allowed
+- Versioning enabled for data protection
+- Resource tagging for better management
+- Input validation for bucket naming conventions
 
-- [x] I have read Chapter 1 of "Terraform: Up & Running".
-- [x] I have watched the required Udemy videos.
-- [x] I have set up your blog.
-- [x] I have written and published a blog post about today's task.
-- [x] I have made a social media post about today's task.
-- [x] I have updated the `daily-update.md` file with my details.
-- [x] I have created a pull request with all the required details.
+## Testing
+- Validated with `terraform fmt`
+- Validated with `terraform validate`
+- Tested resource creation and destruction
+- Verified tag application
 
-## Additional Resources
+## Author
+test-user
 
-- [Terraform: Up & Running on Amazon](https://www.amazon.com/Terraform-Running-Infrastructure-Configuration-Management/dp/1492046906)
-- [Udemy Course on Infrastructure as Code](https://www.udemy.com/course/infrastructure-as-code/)
-- [GitHub Pages](https://pages.github.com/) - For setting up a free blog using GitHub.
-
----
-
-Good luck, and enjoy your journey into Terraform and Infrastructure as Code!
+## License
+MIT
