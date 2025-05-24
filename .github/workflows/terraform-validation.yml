@@ -233,4 +233,11 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: comment
-            }); 
+            });
+
+      - name: Check for Issues
+        if: always()
+        run: |
+          if [ "$HAS_ISSUES" = "true" ]; then
+            echo "Validation checks failed. Please fix the issues before merging."
+            exit 1 
