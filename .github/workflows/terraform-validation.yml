@@ -143,8 +143,12 @@ jobs:
 
       - name: Check Final Status
         if: always()
+        env:
+          HAS_ERRORS: ${{ env.HAS_ERRORS }}
         run: |
-          if [[ "${{ env.HAS_ERRORS }}" == "true" ]]; then
-            echo "❌ Validation failed with errors. Please check the validation results above."
+          if [ "$HAS_ERRORS" = "true" ]; then
+            echo "::error::❌ Validation failed with errors. Please check the validation results above."
             exit 1
+          else
+            echo "✅ All validation checks passed!"
           fi 
