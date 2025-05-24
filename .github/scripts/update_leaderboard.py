@@ -70,6 +70,16 @@ def generate_leaderboard():
         'checkins_attended': 0
     })
 
+    # Add test participant for development
+    test_participant = "awsaimlkenyaug"  # Your GitHub username
+    participants[test_participant] = {
+        'points': 25,  # Example points
+        'prs_merged': 2,
+        'last_activity': datetime.now(timezone.utc),
+        'days_completed': {1, 2},  # Completed days 1 and 2
+        'checkins_attended': 1  # Attended one check-in
+    }
+
     # Analyze PRs
     for pr in repo.get_pulls(state='closed'):
         if not pr.merged:

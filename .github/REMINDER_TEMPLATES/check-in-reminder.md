@@ -45,4 +45,18 @@ Don't forget to:
 3. Update your progress tracker
 4. Prepare your questions
 
-See you at the check-in! 💪 
+See you at the check-in! 💪
+
+# Week [WEEK_NUMBER] Check-in
+
+## 📅 Check-in Date: [DATE]
+
+### Focus Areas for This Week
+[FOCUS_AREAS]
+
+### Reminders
+- Share your progress
+- Ask any questions
+- Help others if you can
+- Update your submissions
+- Keep your repository up to date 
