@@ -23,9 +23,9 @@ jobs:
       - name: Check file structure
         run: |
           for tf_file in $(find . -name "*.tf" -type f); do
-            if [[ ! $tf_file =~ /Submissions/[^/]+/[^/]+/[^/]+\.tf$ ]]; then
+            if [[ ! $tf_file =~ /Day[0-9]+/Submissions/[^/]+/.*\.tf$ ]]; then
               echo "Error: Invalid file structure for $tf_file"
-              echo "Files must be in format: Submissions/<username>/<day>/file.tf"
+              echo "Files must be in format: Day<number>/Submissions/<username>/*.tf"
               exit 1
             fi
           done
