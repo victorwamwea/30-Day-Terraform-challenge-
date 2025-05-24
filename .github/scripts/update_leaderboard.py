@@ -117,8 +117,9 @@ def generate_leaderboard():
         for author, stats in participants.items()
     ])
 
-    # Sort by points and days completed
-    df = df.sort_values(['Points', 'Days Completed', 'Check-ins'], ascending=[False, False, False])
+    # Sort by points and days completed (if DataFrame is not empty)
+    if not df.empty:
+        df = df.sort_values(['Points', 'Days Completed', 'Check-ins'], ascending=[False, False, False])
 
     # Generate markdown
     markdown = """# 🏆 Challenge Leaderboard
@@ -143,12 +144,12 @@ Updated at: {}
 {}
 """.format(
         datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC'),
-        df.to_markdown(index=False),
+        df.to_markdown(index=False) if not df.empty else "No participants yet.",
         len(df),
-        df['PRs Merged'].sum(),
-        df['Days Completed'].mean() / 30 * 100,
-        df['Check-ins'].sum(),
-        df['Check-ins'].mean() / len(CHECKIN_DATES) * 100,
+        df['PRs Merged'].sum() if not df.empty else 0,
+        df['Days Completed'].mean() / 30 * 100 if not df.empty else 0,
+        df['Check-ins'].sum() if not df.empty else 0,
+        df['Check-ins'].mean() / len(CHECKIN_DATES) * 100 if not df.empty else 0,
         get_next_checkin(),
         get_perfect_attendance(df)
     )
