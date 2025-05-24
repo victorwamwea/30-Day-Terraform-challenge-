@@ -1,0 +1,19 @@
+provider "aws" {
+    region = "us-east-1"
+    access_key = "AKIAIOSFODNN7EXAMPLE"
+    secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+}
+
+resource "aws_s3_bucket" "example" {
+bucket="my-hardcoded-bucket"
+acl    ="public-read"
+
+versioning {
+enabled=true
+}
+
+lifecycle_rule{enabled=true
+id="delete_old"
+prefix="logs/"
+}
+} 
